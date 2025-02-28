@@ -1,14 +1,40 @@
-.vscode/**
-.vscode-test/**
+# Source files
+src/**
+.git/**
+.github/**
 out/**
 node_modules/**
-src/**
 .gitignore
-.yarnrc
+tsconfig.json
 webpack.config.js
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/eslint.config.mjs
+.eslintrc.json
+.vscode-test/**
+.vscode/**
+.vscode/project-files.md
+
+
+# Tests
+test/**
+**/test/**
+
+# Development files
+.editorconfig
+.prettierrc
+.eslintignore
+.eslintrc.*
+.travis.yml
+.azure-pipelines.yml
+.gitlab-ci.yml
+.npmrc
+
+# Misc
+**/*.vsix
 **/*.map
 **/*.ts
-**/.vscode-test.*
+!**/*.d.ts
+.yarnrc
+yarn.lock
+yarn-error.log
+.npmignore
+package-lock.json
+icons

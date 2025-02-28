@@ -1,8 +1,8 @@
 {
   "name": "project-files",
-  "displayName": "project-files",
-  "description": "Keeps an up-to-date list of project files and structure that copilot should reference when thinking.",
-  "version": "0.0.1",
+  "displayName": "Project Files for AI",
+  "description": "Automatically maintain an up-to-date file listing to help AI assistants understand your project structure",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -13,6 +13,11 @@
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kalmdown/project-files.git"
+  },
+  "license": "MIT",
   "contributes": {
     "commands": [
       {
@@ -33,6 +38,11 @@
           "type": "array",
           "default": [".git", "node_modules"],
           "description": "Directories to exclude from file listing"
+        },
+        "projectFiles.excludeFiles": {
+          "type": "array",
+          "default": ["*.vsix", "*.log"],
+          "description": "File patterns to exclude (glob patterns supported)"
         }
       }
     }

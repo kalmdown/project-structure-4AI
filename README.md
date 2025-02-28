@@ -1,31 +1,75 @@
-# project-files README
+# Project Files for AI
 
-This is the README for your extension "project-files". After writing up a brief description, we recommend including the following sections.
+A Visual Studio Code extension that automatically maintains a markdown file with your project's file structure that you can point Copilot or similar tool to for context.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Keeps an up-to-date listing of all files in your project
+- Works in two modes: Manual or Auto
+- Configurable exclusion of directories and files
+- Status bar controls for easy mode switching and manual updates
 
-For example if there is an image subfolder under your extension project workspace:
+## Installation
 
-\!\[feature X\]\(images/feature-x.png\)
+1. Open VS Code
+2. Press `Ctrl+Shift+X` to open the Extensions view
+3. Search for "Project Files"
+4. Click Install
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Usage
 
-## Requirements
+Once installed, the extension will create a `.vscode/project-files.md` file in your workspace that contains a hierarchical listing of all files and folders in your project.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+### Status Bar Controls
 
-## Extension Settings
+The extension adds two items to the status bar:
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+- **Project Files: Manual/Auto** - Shows the current mode. Click to toggle between Manual and Auto modes.
+- **Refresh Icon** - Click to manually update the file listing (only visible in Manual mode).
 
-For example:
+### Modes
 
-This extension contributes the following settings:
+- **Manual Mode**: The file listing is only updated when you manually trigger an update
+- **Auto Mode**: The file listing is automatically updated whenever files are added, deleted, or changed
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+### Commands
+
+Open the Command Palette (`Ctrl+Shift+P`) and type:
+
+- `Project Files: Toggle State` - Switch between Manual and Auto modes
+- `Project Files: Update Now` - Update the file listing immediately
+
+## Configuration
+
+You can configure directories and files to exclude from the listing via the VS Code settings:
+
+1. Open Settings (`Ctrl+,`)
+2. Search for "Project Files"
+3. Edit these settings:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `projectFiles.excludeDirectories` | Directories to exclude | `[".git", "node_modules"]` |
+| `projectFiles.excludeFiles` | File patterns to exclude | `["*.vsix", "*.log"]` |
+
+### Advanced Configuration
+
+You can also configure these settings in your `settings.json`:
+
+```json
+"projectFiles.excludeDirectories": [
+  ".git",
+  "node_modules",
+  "dist",
+  "bin"
+],
+"projectFiles.excludeFiles": [
+  "*.vsix",
+  "*.log",
+  "*.zip",
+  "package-lock.json"
+]
+```
 
 ## Known Issues
 
@@ -47,25 +91,3 @@ Fixed issue #.
 
 Added features X, Y, and Z.
 
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**

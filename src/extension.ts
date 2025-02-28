@@ -169,22 +169,30 @@ function updateFileListing(): void {
     }
 
     const rootPath = workspaceFolders[0].uri.fsPath;
-    console.log('Root path:', rootPath);
     
     const fileListingPath = path.join(rootPath, '.vscode', 'project-files.md');
-    console.log('File listing path:', fileListingPath);
 
     try {
         // Ensure .vscode directory exists
         const vscodePath = path.join(rootPath, '.vscode');
         if (!fs.existsSync(vscodePath)) {
-            console.log('Creating .vscode directory');
             fs.mkdirSync(vscodePath);
         }
 
         const config = vscode.workspace.getConfiguration('projectFiles');
         const excludeDirs = config.get<string[]>('excludeDirectories') || ['.git', 'node_modules'];
+        const excludeFiles = config.get<string[]>('excludeFiles') || ['*.vsix', '*.log'];
 
+        // Convert file patterns to RegExp objects
+        const filePatterns = excludeFiles.map(pattern => {
+            // Convert glob pattern to RegExp
+            return new RegExp('^' + 
+                pattern.replace(/\./g, '\\.')
+                       .replace(/\*/g, '.*')
+                       .replace(/\?/g, '.') + 
+                '$', 'i');
+        });
+        
         let fileListing = '# Project Files\n\n';
         fileListing += 'This file maintains an up-to-date list of project files and structure.\n\n';
         fileListing += '## File Structure\n\n';
@@ -205,8 +213,17 @@ function updateFileListing(): void {
                 const stats = fs.statSync(filePath);
                 const relativePath = path.relative(rootPath, filePath);
                 
-                // Skip excluded directories
-                if (stats.isDirectory() && excludeDirs.includes(file)) {
+                // Check if path contains any excluded directory
+                if (stats.isDirectory()) {
+                    // Check if this directory or any parent directory is in the exclude list
+                    const pathParts = relativePath.split(path.sep);
+                    if (pathParts.some(part => excludeDirs.includes(part))) {
+                        return;
+                    }
+                }
+
+                // Skip excluded files
+                if (!stats.isDirectory() && filePatterns.some(pattern => pattern.test(file))) {
                     return;
                 }
 
@@ -238,7 +255,32 @@ function setupFileWatcher() {
     // Helper function to check if a file should be ignored
     const shouldIgnoreFile = (uri: vscode.Uri) => {
         const filePath = uri.fsPath;
-        return filePath.endsWith('project-files.md');
+        const fileName = path.basename(filePath);
+        
+        // Ignore our own file
+        if (filePath.endsWith('project-files.md') && filePath.includes('.vscode')) {
+            return true;
+        }
+        
+        // Get exclude settings
+        const config = vscode.workspace.getConfiguration('projectFiles');
+        const excludeDirs = config.get<string[]>('excludeDirectories') || ['.git', 'node_modules'];
+        const excludeFiles = config.get<string[]>('excludeFiles') || ['*.vsix', '*.log'];
+        
+        // Check if path contains any excluded directory
+        const normalizedPath = filePath.replace(/\\/g, '/');
+        for (const dir of excludeDirs) {
+            if (normalizedPath.includes(`/${dir}/`) || normalizedPath.endsWith(`/${dir}`)) {
+                return true;
+            }
+        }
+        
+        // Check file patterns
+        const filePatterns = excludeFiles.map(pattern => {
+            return new RegExp('^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 'i');
+        });
+        
+        return filePatterns.some(pattern => pattern.test(fileName));
     };
     
     fileSystemWatcher.onDidCreate((uri) => {
