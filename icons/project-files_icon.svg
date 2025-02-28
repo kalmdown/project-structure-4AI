@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="16px" viewBox="0 0 44 44" version="1.1" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;" height="16px">
+  <defs>
+    <view id="view-1" viewBox="57.955 7.228 0.44 0.073">
+      <title>View 1</title>
+    </view>
+  </defs>
+  <g transform="matrix(1,0,0,1,-149,-54)">
+    <g id="project-list_status-bar-icon_Manual" transform="matrix(1,0,0,1.04762,-3,56.0952)">
+      <g transform="matrix(0.171171,0,0,0.381818,158.631,1.43636)">
+        <rect x="8" y="6" width="111" height="15" style="fill:white;"/>
+      </g>
+      <g transform="matrix(0.216216,0,0,0.381818,161.27,9.87861)">
+        <rect x="8" y="6" width="111" height="15" style="fill:white;"/>
+      </g>
+      <g transform="matrix(0.171171,0,0,0.381818,172.631,18.6182)">
+        <rect x="8" y="6" width="111" height="15" style="fill:white;"/>
+      </g>
+      <g transform="matrix(0.153153,0,0,0.381818,172.775,27.2091)">
+        <rect x="8" y="6" width="111" height="15" style="fill:white;"/>
+      </g>
+      <g transform="matrix(0.5,0,0,0.477273,74.4303,20.2832)">
+        <path d="M159.139,-14.689L163.139,-14.689L167.139,-10.689L171.139,-14.689L175.139,-14.689L167.139,-6.689L159.139,-14.689Z" style="fill:white;"/>
+      </g>
+      <g transform="matrix(3.06162e-17,-0.477273,0.491433,2.87238e-17,160.827,86.2955)">
+        <path d="M159,-12L163,-11.861L167,-7.861L171,-11.861L175,-12L167,-3.861L159,-12Z" style="fill:white;"/>
+      </g>
+      <g transform="matrix(2,0,0,1.90909,-153,-9.63636)">
+        <circle cx="160.5" cy="17.5" r="1.5" style="fill:white;"/>
+      </g>
+      <g transform="matrix(2,0,0,1.90909,-153,-1.04545)">
+        <circle cx="160.5" cy="17.5" r="1.5" style="fill:white;"/>
+      </g>
+    </g>
+  </g>
+</svg>
