@@ -1,6 +1,6 @@
 # Project Files for AI
 
-A Visual Studio Code extension that automatically maintains a markdown file with your project's file structure that you can point Copilot or similar tool to for context.
+A likely short term need to deal with VSCode LLMs inability to keep track of issues across files of a project that are not open. This Visual Studio Code extension automatically maintains a markdown file with your project's file structure so you can point Copilot or similar tool to it for context.
 
 ## Features
 
@@ -43,9 +43,10 @@ Open the Command Palette (`Ctrl+Shift+P`) and type:
 
 You can configure directories and files to exclude from the listing via the VS Code settings:
 
-1. Open Settings (`Ctrl+,`)
+VS Code Settings UI:
+1. Open Settings (Ctrl+, or File > Preferences > Settings)
 2. Search for "Project Files"
-3. Edit these settings:
+3. Edit the arrays for "Exclude Directories" and "Exclude Files"
 
 | Setting | Description | Default |
 |---------|-------------|---------|
@@ -55,6 +56,8 @@ You can configure directories and files to exclude from the listing via the VS C
 ### Advanced Configuration
 
 You can also configure these settings in your `settings.json`:
+1. Open settings.json (Ctrl+Shift+P > "Preferences: Open Settings (JSON)")
+2. Add or edit:
 
 ```json
 "projectFiles.excludeDirectories": [
@@ -70,24 +73,48 @@ You can also configure these settings in your `settings.json`:
   "package-lock.json"
 ]
 ```
+You can set different exclusions per project by adding them to settings.json in a workspace
+After updating the settings, they take effect immediately for new file operations and on the next update of the file listing.
+
+## USE OF THE project-files.md file
+
+Currently, GitHub Copilot doesn't have a built-in way to automatically attach specific files to every query's context. However, there are some workarounds you could try:
+
+### Make Copilot aware of the file
+
+Create a .github/copilot-instructions.md file in your repository5.
+
+Add the following instruction to the file:
+```
+Always refer to the .vscode/file_listing.md file for the most up-to-date project structure before suggesting file creations or modifications.
+```
+
+Ensure that custom instructions are enabled in your Copilot settings. With this setup, Copilot will be instructed to check the project-files.md before making suggestions about file creation or modification, helping it make more informed decisions about your project structure.
+
+### Other approaches
+
+1. **Keep the Project Files document open**
+   - Split your editor and keep the generated project-files.md open as you work
+   - Copilot tends to prioritize open files in its context window
+
+2. **Use @file references in comments**
+   ```javascript
+   // See project structure in .vscode/project-files.md
+   ```
+
+3. **Use workspace-level prompts**
+   - In VS Code with Copilot Chat:
+   ```
+   /workspace Use .vscode/project-files.md as context for project structure
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+None...yet.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+First release.
 
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
+Initial release of Project Files for AI.

@@ -39,6 +39,36 @@ let refreshStatusBarItem: vscode.StatusBarItem; // New separate item for refresh
 let currentState: WatchState = WatchState.Manual; // Default to Manual instead of Off
 let fileWatcher: vscode.FileSystemWatcher | undefined;
 
+function shouldIgnoreFile(uri: vscode.Uri): boolean {
+    const filePath = uri.fsPath;
+    const fileName = path.basename(filePath);
+    
+    // Ignore our own file
+    if (filePath.endsWith('project-files.md') && filePath.includes('.vscode')) {
+        return true;
+    }
+    
+    // Get exclude settings
+    const config = vscode.workspace.getConfiguration('projectFiles');
+    const excludeDirs = config.get<string[]>('excludeDirectories') || ['.git', 'node_modules'];
+    const excludeFiles = config.get<string[]>('excludeFiles') || ['*.vsix', '*.log'];
+    
+    // Check if path contains any excluded directory
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    for (const dir of excludeDirs) {
+        if (normalizedPath.includes(`/${dir}/`) || normalizedPath.endsWith(`/${dir}`)) {
+            return true;
+        }
+    }
+    
+    // Check file patterns
+    const filePatterns = excludeFiles.map(pattern => {
+        return new RegExp('^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 'i');
+    });
+    
+    return filePatterns.some(pattern => pattern.test(fileName));
+}
+
 export function activate(context: vscode.ExtensionContext) {
     // Force immediate console output for debugging
     console.clear();
@@ -117,6 +147,21 @@ export function activate(context: vscode.ExtensionContext) {
         disposable = vscode.workspace.onDidChangeWorkspaceFolders(() => {
             // Always update since we only have Manual and Auto modes now
             updateFileListing();
+        });
+        context.subscriptions.push(disposable);
+
+        // Add this new code for file rename handling
+        disposable = vscode.workspace.onDidRenameFiles((e) => {
+            if (currentState === WatchState.Auto) {
+                // Check if any of the renamed files should not be ignored
+                for (const rename of e.files) {
+                    if (!shouldIgnoreFile(rename.oldUri) || !shouldIgnoreFile(rename.newUri)) {
+                        log(`File renamed: ${rename.oldUri.fsPath} -> ${rename.newUri.fsPath}`);
+                        updateFileListing();
+                        break; // Only need to update once if multiple files are renamed
+                    }
+                }
+            }
         });
         context.subscriptions.push(disposable);
 
@@ -283,6 +328,7 @@ function setupFileWatcher() {
         return filePatterns.some(pattern => pattern.test(fileName));
     };
     
+    // Handle file creation
     fileSystemWatcher.onDidCreate((uri) => {
         if (currentState === WatchState.Auto && !shouldIgnoreFile(uri)) {
             log(`File created: ${uri.fsPath}`);
@@ -290,6 +336,7 @@ function setupFileWatcher() {
         }
     });
 
+    // Handle file deletion
     fileSystemWatcher.onDidDelete((uri) => {
         if (currentState === WatchState.Auto && !shouldIgnoreFile(uri)) {
             log(`File deleted: ${uri.fsPath}`);
@@ -297,10 +344,12 @@ function setupFileWatcher() {
         }
     });
 
+    // Remove or disable the change handler since we don't want to update on content changes
+    // Instead, just log the event but don't trigger an update
     fileSystemWatcher.onDidChange((uri) => {
         if (currentState === WatchState.Auto && !shouldIgnoreFile(uri)) {
-            log(`File changed: ${uri.fsPath}`);
-            updateFileListing();
+            log(`File content changed (ignoring): ${uri.fsPath}`);
+            // No updateFileListing() call here
         }
     });
 
