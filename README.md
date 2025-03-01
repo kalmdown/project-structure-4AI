@@ -86,7 +86,7 @@ Create a .github/copilot-instructions.md file in your repository5.
 
 Add the following instruction to the file:
 ```
-Always refer to the .vscode/file_listing.md file for the most up-to-date project structure before suggesting file creations or modifications.
+Always refer to the .vscode/project-files.md file for the most up-to-date project structure before suggesting file creations or modifications.
 ```
 
 Ensure that custom instructions are enabled in your Copilot settings. With this setup, Copilot will be instructed to check the project-files.md before making suggestions about file creation or modification, helping it make more informed decisions about your project structure.
