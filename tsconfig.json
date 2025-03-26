@@ -1,9 +1,10 @@
 {
 	"compilerOptions": {
-		"module": "Node16",
-		"target": "ES2022",
+		 "esModuleInterop": true,
+		"module": "commonjs",
+		"target": "ES2020",
 		"lib": [
-			"ES2022"
+			"ES2020"
 		],
 		"sourceMap": true,
 		"rootDir": "src",
@@ -13,5 +14,7 @@
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
 		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
-	}
+		"outDir": "out"
+	},
+	"exclude": ["node_modules", ".vscode-test"]
 }

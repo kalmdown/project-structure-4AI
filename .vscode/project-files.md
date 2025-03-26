@@ -10,14 +10,22 @@ This file maintains an up-to-date list of project files and structure.
   - 📄 `.vscode\project-files.md`
   - 📄 `.vscode\tasks.json`
 - 📁 `icons/`
+  - 📄 `icons\extension-icon.png`
   - 📄 `icons\project-files_icon.svg`
   - 📄 `icons\project-list_status-bar-icon_Auto.svg`
   - 📄 `icons\project-list_status-bar-icon_Manual.svg`
   - 📄 `icons\project-list_status-bar-icon_Off.svg`
-  - 📄 `icons\status-bar_icons.png`
+  - 📄 `icons\publisher-icon_kd.png`
+  - 📄 `icons\status-bar_icons_Auto.png`
+  - 📄 `icons\status-bar_icons_Manual.png`
+  - 📄 `icons\status-bar_icons_Off.png`
+  - 📄 `icons\status-bar_icons.afdesign~lock~`
 - 📁 `src/`
   - 📁 `src\test/`
+    - 📁 `src\test\suite/`
+      - 📄 `src\test\suite\index.ts`
     - 📄 `src\test\extension.test.ts`
+    - 📄 `src\test\runTest.ts`
   - 📄 `src\extension.ts`
 - 📄 `.gitignore`
 - 📄 `.vscode-test.mjs`
@@ -31,6 +39,7 @@ This file maintains an up-to-date list of project files and structure.
 - 📄 `tsconfig.json`
 - 📄 `vsc-extension-quickstart.md`
 - 📄 `webpack.config.js`
+- 📄 `webpack.test.config.js`
 
 ---
-Last updated: 2025-02-28T19:51:03.050Z
+Last updated: 2025-03-26T17:37:53.943Z

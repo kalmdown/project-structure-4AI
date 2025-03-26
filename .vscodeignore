@@ -16,6 +16,7 @@ webpack.config.js
 # Tests
 test/**
 **/test/**
+**/*.js.map
 
 # Development files
 .editorconfig
@@ -37,4 +38,4 @@ yarn.lock
 yarn-error.log
 .npmignore
 package-lock.json
-icons
+*.afdesign

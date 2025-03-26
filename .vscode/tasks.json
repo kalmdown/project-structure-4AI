@@ -39,6 +39,20 @@
 				"npm: watch-tests"
 			],
 			"problemMatcher": []
+		},
+		{
+			"label": "npm: webpack-dev",
+			"type": "npm",
+			"script": "webpack-dev",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": ["$ts-webpack-watch"],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "never"
+			}
 		}
 	]
 }

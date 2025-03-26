@@ -1,0 +1,9 @@
+// test-workspace.code-workspace
+{
+  "folders": [
+    {
+      "path": "./test-workspace"
+    }
+  ],
+  "settings": {}
+}

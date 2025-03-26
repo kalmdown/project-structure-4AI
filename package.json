@@ -1,8 +1,10 @@
 {
-  "name": "project-files",
-  "displayName": "Project Files for AI",
-  "description": "Automatically maintain an up-to-date file listing to help AI assistants understand your project structure",
-  "version": "1.0.0",
+  "name": "project-structure",
+  "displayName": "Project Structure for AI",
+  "publisher": "kalmdesigns",
+  "description": "Automatically maintain an up-to-date file listing and routes to help AI assistants understand your project structure",
+  "version": "1.0.2",
+  "icon": "icons/extension-icon.png",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -15,64 +17,105 @@
   "main": "./dist/extension.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kalmdown/project-files.git"
+    "url": "https://github.com/kalmdown/project-structure.git"
   },
   "license": "MIT",
   "contributes": {
     "commands": [
       {
-        "command": "projectFiles.toggleState",
-        "title": "Project Files: Toggle State",
-        "category": "Project Files"
+        "command": "projectStructure.toggleState",
+        "title": "Project Structure: Toggle State",
+        "category": "Project Structure"
       },
       {
-        "command": "projectFiles.runOnce",
-        "title": "Project Files: Update Now",
-        "category": "Project Files"
+        "command": "projectStructure.runOnce",
+        "title": "Project Structure: Update Now",
+        "category": "Project Structure"
+      },
+      {
+        "command": "projectStructure.clearCache",
+        "title": "Project Structure: Clear Cache",
+        "category": "Project Structure"
       }
     ],
     "configuration": {
-      "title": "Project Files",
+      "title": "Project Structure",
       "properties": {
-        "projectFiles.excludeDirectories": {
+        "projectStructure.excludeDirectories": {
           "type": "array",
-          "default": [".git", "node_modules"],
+          "default": [
+            ".git",
+            "node_modules"
+          ],
           "description": "Directories to exclude from file listing"
         },
-        "projectFiles.excludeFiles": {
+        "projectStructure.excludeFiles": {
           "type": "array",
-          "default": ["*.vsix", "*.log"],
+          "default": [
+            "*.vsix",
+            "*.log"
+          ],
           "description": "File patterns to exclude (glob patterns supported)"
+        },
+        "projectStructure.enableLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable logging to the output channel"
+        },
+        "projectStructure.includeRelationships": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include file import and export relationships in the listing"
+        },
+        "projectStructure.detectFrameworks": {
+          "type": "object",
+          "default": {
+            "express": true,
+            "react": true,
+            "next": true,
+            "vue": true,
+            "nestjs": true
+          },
+          "description": "Enable/disable specific framework route detection"
+        },
+        "projectStructure.maxFileSize": {
+          "type": "number",
+          "default": 1024,
+          "description": "Maximum file size in KB to parse for relationships (0 for no limit)"
         }
       }
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test",
-    "package-vsix": "vsce package"
+    "vscode:prepublish": "npm run webpack-prod",
+    "webpack": "webpack --config ./webpack.config.js",
+    "webpack-dev": "webpack --mode development --watch",
+    "webpack-prod": "webpack --mode production",
+    "compile": "npm run webpack",
+    "package": "vsce package",
+    "webpack-test": "webpack --config webpack.test.config.js",
+    "test-compile": "tsc -p ./",
+    "pretest": "npm run webpack-test",
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.97.0",
+    "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/sinon": "^17.0.4",
+    "@types/vscode": "^1.97.0",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.22.0",
-    "eslint": "^9.19.0",
-    "typescript": "^5.7.3",
-    "ts-loader": "^9.5.2",
-    "webpack": "^5.97.1",
-    "webpack-cli": "^6.0.1",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
-    "@vscode/vsce": "^2.24.0"
+    "@vscode/vsce": "^2.24.0",
+    "eslint": "^9.19.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "sinon": "^20.0.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
   }
 }
-

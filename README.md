@@ -44,35 +44,38 @@ Open the Command Palette (`Ctrl+Shift+P`) and type:
 You can configure directories and files to exclude from the listing via the VS Code settings:
 
 VS Code Settings UI:
+
 1. Open Settings (Ctrl+, or File > Preferences > Settings)
 2. Search for "Project Files"
 3. Edit the arrays for "Exclude Directories" and "Exclude Files"
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `projectFiles.excludeDirectories` | Directories to exclude | `[".git", "node_modules"]` |
-| `projectFiles.excludeFiles` | File patterns to exclude | `["*.vsix", "*.log"]` |
+| `projectStructure.excludeDirectories` | Directories to exclude | `[".git", "node_modules"]` |
+| `projectStructure.excludeFiles` | File patterns to exclude | `["*.vsix", "*.log"]` |
 
 ### Advanced Configuration
 
 You can also configure these settings in your `settings.json`:
+
 1. Open settings.json (Ctrl+Shift+P > "Preferences: Open Settings (JSON)")
 2. Add or edit:
 
 ```json
-"projectFiles.excludeDirectories": [
+"projectStructure.excludeDirectories": [
   ".git",
   "node_modules",
   "dist",
   "bin"
 ],
-"projectFiles.excludeFiles": [
+"projectStructure.excludeFiles": [
   "*.vsix",
   "*.log",
   "*.zip",
   "package-lock.json"
 ]
 ```
+
 You can set different exclusions per project by adding them to settings.json in a workspace
 After updating the settings, they take effect immediately for new file operations and on the next update of the file listing.
 
@@ -85,6 +88,7 @@ Currently, GitHub Copilot doesn't have a built-in way to automatically attach sp
 Create a .github/copilot-instructions.md file in your repository5.
 
 Add the following instruction to the file:
+
 ```
 Always refer to the .vscode/file_listing.md file for the most up-to-date project structure before suggesting file creations or modifications.
 ```
@@ -98,12 +102,14 @@ Ensure that custom instructions are enabled in your Copilot settings. With this 
    - Copilot tends to prioritize open files in its context window
 
 2. **Use @file references in comments**
+
    ```javascript
    // See project structure in .vscode/project-files.md
    ```
 
 3. **Use workspace-level prompts**
    - In VS Code with Copilot Chat:
+
    ```
    /workspace Use .vscode/project-files.md as context for project structure
 
