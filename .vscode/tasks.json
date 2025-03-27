@@ -53,6 +53,24 @@
 			"presentation": {
 				"reveal": "never"
 			}
+		},
+		{
+			"label": "Run Single Test",
+			"type": "shell",
+			"command": "npm run test:grep \"/^(${input:testPattern}$)/\"",
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			}
+		}
+	],
+	"inputs": [
+		{
+			"id": "testPattern",
+			"description": "Test pattern to match:",
+			"default": "Project Structure Extension Tests Route Detection",
+			"type": "promptString"
 		}
 	]
 }

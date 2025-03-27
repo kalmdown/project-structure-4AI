@@ -27,6 +27,7 @@ test/**
 .azure-pipelines.yml
 .gitlab-ci.yml
 .npmrc
+.code-workspace
 
 # Misc
 **/*.vsix
@@ -39,3 +40,5 @@ yarn-error.log
 .npmignore
 package-lock.json
 *.afdesign
+.afdesign~lock~
+*.mjs

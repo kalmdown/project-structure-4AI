@@ -350,7 +350,30 @@ function updateFileListing(): void {
                       }
                       
                       if (routesProvided.length > 0) {
-                        fileListing += `${indent}  - *Routes Provided:* ${routesProvided.map(r => `\`${r.method} ${r.path}\``).join(', ')}\n`;
+                        fileListing += `${indent}  - *Routes Provided:*\n`;
+                        
+                        // Process each route individually
+                        for (const route of routesProvided) {
+                          // Always include method and path
+                          let routeStr = `${indent}    - \`${route.method} ${route.path}\``;
+                          
+                          // Always include framework information
+                          if (route.framework) {
+                            routeStr += ` (${route.framework})`;
+                          }
+                          
+                          // Add handler if available
+                          if (route.handler) {
+                            routeStr += ` → ${route.handler}`;
+                          }
+                          
+                          // Add params if available
+                          if (route.params && route.params.length > 0) {
+                            routeStr += ` [params: ${route.params.join(', ')}]`;
+                          }
+                          
+                          fileListing += routeStr + '\n';
+                        }
                       }
                       
                       if (routesConsumed.length > 0) {
@@ -443,7 +466,7 @@ function setupFileWatcher() {
 }
 
 // Replace your current parseFileRelationships with this:
-function parseFileRelationships(filePath: string): { imports: string[], exports: string[], routesProvided: Array<{path: string, method: string}>, routesConsumed: string[] } {
+function parseFileRelationships(filePath: string): { imports: string[], exports: string[], routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>, routesConsumed: string[] } {
   try {
     const ext = path.extname(filePath).toLowerCase();
     
@@ -479,7 +502,7 @@ function parseFileRelationships(filePath: string): { imports: string[], exports:
     }
     
     // Parse the file based on type
-    let result: { imports: string[], exports: string[], routesProvided: Array<{path: string, method: string}>, routesConsumed: string[] };
+    let result: { imports: string[], exports: string[], routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>, routesConsumed: string[] };
     
     if (['.ts', '.tsx', '.js', '.jsx'].includes(ext)) {
       result = parseTypeScriptFile(filePath);
@@ -506,17 +529,28 @@ function parseFileRelationships(filePath: string): { imports: string[], exports:
 }
 
 // Framework route detection functions
-function detectReactRouterRoutes(content: string, filePath: string): Array<{path: string, method: string}> {
-  const routes: Array<{path: string, method: string}> = [];
+function detectReactRouterRoutes(content: string, filePath: string): { 
+  routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>, 
+  routesConsumed: string[] 
+} {
+  const routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}> = [];
+  const routesConsumed: string[] = [];
   
   // Match JSX Routes like: <Route path="/about" element={<About />} />
   // and <Route path="/users/:id" component={UserComponent} />
-  const jsxRouteRegex = /<Route[^>]*path=["']([^"']+)["'][^>]*(?:element|component)=/g;
+  const jsxRouteRegex = /<Route[^>]*path=["']([^"']+)["'][^>]*(?:element=\{<([A-Za-z0-9_]+)|component=\{([A-Za-z0-9_]+))/g;
   let match;
   while ((match = jsxRouteRegex.exec(content)) !== null) {
-    routes.push({
-      path: match[1],
-      method: 'GET'  // React Router typically handles GET requests
+    const path = match[1];
+    const component = match[2] || match[3];
+    const params = path.match(/:[a-zA-Z0-9_]+/g)?.map(p => p.substring(1)) || [];
+    
+    routesProvided.push({
+      path,
+      method: 'GET',  // React Router typically handles GET requests
+      framework: 'React Router',
+      handler: component,
+      params: params.length > 0 ? params : undefined
     });
   }
   
@@ -525,18 +559,27 @@ function detectReactRouterRoutes(content: string, filePath: string): Array<{path
   const configRouteRegex = /path:\s*["']([^"']+)["']/g;
   while ((match = configRouteRegex.exec(content)) !== null) {
     if (!match[1].includes('${') && !match[1].includes('*')) { // Avoid template strings and wildcards
-      routes.push({
-        path: match[1],
-        method: 'GET'
+      const path = match[1];
+      const params = path.match(/:[a-zA-Z0-9_]+/g)?.map(p => p.substring(1)) || [];
+      
+      routesProvided.push({
+        path,
+        method: 'GET',
+        framework: 'React Router',
+        params: params.length > 0 ? params : undefined
       });
     }
   }
   
-  return routes;
+  return { routesProvided, routesConsumed };
 }
 
-function detectNextJsRoutes(filePath: string): Array<{path: string, method: string}> {
-  const routes: Array<{path: string, method: string}> = [];
+function detectNextJsRoutes(filePath: string): { 
+  routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>, 
+  routesConsumed: string[] 
+} {
+  const routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}> = [];
+  const routesConsumed: string[] = [];
   
   // Check if this is a pages directory file
   if (filePath.includes('/pages/') || filePath.includes('\\pages\\')) {
@@ -551,45 +594,62 @@ function detectNextJsRoutes(filePath: string): Array<{path: string, method: stri
         // Handle dynamic routes with [param]
         .replace(/\[([^\]]+)\]/g, ':$1');
         
+      // Extract params from route path
+      const params = routePath.match(/:[a-zA-Z0-9_]+/g)?.map(p => p.substring(1)) || [];
+        
       // Check if it's an API route
       if (routePath.startsWith('/api/')) {
         // API routes support all HTTP methods
         ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].forEach(method => {
-          routes.push({ path: routePath, method });
+          routesProvided.push({ path: routePath, method, framework: 'Next.js', params: params.length > 0 ? params : undefined });
         });
       } else {
         // Normal page routes are GET
-        routes.push({ path: routePath, method: 'GET' });
+        routesProvided.push({ path: routePath, method: 'GET', framework: 'Next.js', params: params.length > 0 ? params : undefined });
       }
     }
   }
   
-  return routes;
+  return { routesProvided, routesConsumed };
 }
 
-function detectVueRouterRoutes(content: string): Array<{path: string, method: string}> {
-  const routes: Array<{path: string, method: string}> = [];
+function detectVueRouterRoutes(content: string): { 
+  routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>, 
+  routesConsumed: string[] 
+} {
+  const routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}> = [];
+  const routesConsumed: string[] = [];
   
   // Match route configurations: { path: '/about', component: About }
   const routeRegex = /{\s*path:\s*["']([^"']+)["']/g;
   let match;
   while ((match = routeRegex.exec(content)) !== null) {
-    routes.push({
-      path: match[1],
-      method: 'GET'
+    const path = match[1];
+    const params = path.match(/:[a-zA-Z0-9_]+/g)?.map(p => p.substring(1)) || [];
+    
+    routesProvided.push({
+      path,
+      method: 'GET',
+      framework: 'Vue Router',
+      params: params.length > 0 ? params : undefined
     });
   }
   
-  return routes;
+  return { routesProvided, routesConsumed };
 }
 
-function detectNestJsRoutes(content: string): Array<{path: string, method: string}> {
-  const routes: Array<{path: string, method: string}> = [];
-  const basePaths: string[] = [];
+function detectNestJsRoutes(content: string): { 
+  routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>, 
+  routesConsumed: string[] 
+} {
+  const routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}> = [];
+  const routesConsumed: string[] = [];
   
   // Match Controller decorator
   const controllerRegex = /@Controller\(['"]?([^'")\s]+)?['"]?\)/g;
   let match;
+  const basePaths: string[] = [];
+  
   while ((match = controllerRegex.exec(content)) !== null) {
     basePaths.push(match[1] || '');
   }
@@ -610,22 +670,27 @@ function detectNestJsRoutes(content: string): Array<{path: string, method: strin
       const fullPath = basePath 
         ? (subPath ? `/${basePath}/${subPath}` : `/${basePath}`)
         : (subPath ? `/${subPath}` : '/');
+        
+      // Extract params from route path
+      const params = fullPath.match(/:[a-zA-Z0-9_]+/g)?.map(p => p.substring(1)) || [];
       
-      routes.push({
+      routesProvided.push({
         path: fullPath.replace(/\/+/g, '/'), // Remove duplicate slashes
-        method
+        method,
+        framework: 'NestJS',
+        params: params.length > 0 ? params : undefined
       });
     });
   }
   
-  return routes;
+  return { routesProvided, routesConsumed };
 }
 
 // Enhance the existing TypeScript parser with these new detectors
 function parseTypeScriptFile(filePath: string): { 
   imports: string[], 
   exports: string[],
-  routesProvided: Array<{path: string, method: string}>,
+  routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>,
   routesConsumed: string[]
 } {
   try {
@@ -691,7 +756,29 @@ function parseTypeScriptFile(filePath: string): {
             ts.isIdentifier(left.expression) && 
             left.expression.text === 'module' && 
             left.name.text === 'exports') {
-          exports.push('module.exports');
+            
+            // If we've already found a module.exports, don't add it again
+            if (!exports.includes('module.exports')) {
+                // Try to get info about what's being exported if possible
+                const right = node.expression.right;
+                if (ts.isObjectLiteralExpression(right)) {
+                    // For object exports like: module.exports = { a, b, c }
+                    right.properties.forEach(prop => {
+                        if (ts.isPropertyAssignment(prop) && 
+                            (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name))) {
+                            const propName = ts.isIdentifier(prop.name) ? 
+                                prop.name.text : prop.name.text;
+                            exports.push(propName);
+                        }
+                    });
+                } else if (ts.isIdentifier(right)) {
+                    // For single variable exports like: module.exports = MyClass
+                    exports.push(right.text);
+                } else {
+                    // For other cases, just add generic module.exports once
+                    exports.push('module.exports');
+                }
+            }
         }
       }
       
@@ -702,7 +789,7 @@ function parseTypeScriptFile(filePath: string): {
     visit(sourceFile);
     
     // Add route detection
-    let routesProvided: Array<{path: string, method: string}> = [];
+    let routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}> = [];
     let routesConsumed: string[] = [];
     
     const config = vscode.workspace.getConfiguration('projectStructure');
@@ -721,19 +808,27 @@ function parseTypeScriptFile(filePath: string): {
     }
 
     if (frameworkConfig.react !== false) {
-      routesProvided = routesProvided.concat(detectReactRouterRoutes(content, filePath));
+      const reactRoutes = detectReactRouterRoutes(content, filePath);
+      routesProvided = routesProvided.concat(reactRoutes.routesProvided);
+      routesConsumed = routesConsumed.concat(reactRoutes.routesConsumed);
     }
 
     if (frameworkConfig.next !== false) {
-      routesProvided = routesProvided.concat(detectNextJsRoutes(filePath));
+      const nextRoutes = detectNextJsRoutes(filePath);
+      routesProvided = routesProvided.concat(nextRoutes.routesProvided);
+      routesConsumed = routesConsumed.concat(nextRoutes.routesConsumed);
     }
 
     if (frameworkConfig.vue !== false) {
-      routesProvided = routesProvided.concat(detectVueRouterRoutes(content));
+      const vueRoutes = detectVueRouterRoutes(content);
+      routesProvided = routesProvided.concat(vueRoutes.routesProvided);
+      routesConsumed = routesConsumed.concat(vueRoutes.routesConsumed);
     }
 
     if (frameworkConfig.nestjs !== false) {
-      routesProvided = routesProvided.concat(detectNestJsRoutes(content));
+      const nestRoutes = detectNestJsRoutes(content);
+      routesProvided = routesProvided.concat(nestRoutes.routesProvided);
+      routesConsumed = routesConsumed.concat(nestRoutes.routesConsumed);
     }
     
     return { 
@@ -751,7 +846,7 @@ function parseTypeScriptFile(filePath: string): {
 function parsePythonFile(filePath: string): { 
   imports: string[], 
   exports: string[], 
-  routesProvided: Array<{path: string, method: string}>, 
+  routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>, 
   routesConsumed: string[] 
 } {
   try {
@@ -792,16 +887,21 @@ function parsePythonFile(filePath: string): {
     }
     
     // Look for Flask/FastAPI routes
-    const routesProvided: Array<{path: string, method: string}> = [];
+    const routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}> = [];
     const routesConsumed: string[] = [];
     
  // Find Flask/FastAPI route decorators
 const routeRegex = /@(?:app|blueprint)\.(?:route|get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"](?:,\s*methods=\[['"]([^'"]+)['"])?/g;
    let match;
     while ((match = routeRegex.exec(content)) !== null) {
+      const path = match[1];
+      const params = path.match(/:[a-zA-Z0-9_]+/g)?.map(p => p.substring(1)) || [];
+      
       routesProvided.push({
-        path: match[1],
-        method: (match[2] || 'GET').toUpperCase()
+        path,
+        method: (match[2] || 'GET').toUpperCase(),
+        framework: 'Flask/FastAPI',
+        params: params.length > 0 ? params : undefined
       });
     }
     
@@ -858,7 +958,7 @@ interface FileCache {
   lastModified: number;
   imports: string[];
   exports: string[];
-  routesProvided: Array<{path: string, method: string}>;
+  routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>;
   routesConsumed: string[];
 }
 
@@ -877,19 +977,26 @@ function clearCache(): void {
 }
 
 function detectExpressRoutes(content: string): { 
-  routesProvided: Array<{path: string, method: string}>, 
+  routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}>, 
   routesConsumed: string[] 
 } {
-  const routesProvided: Array<{path: string, method: string}> = [];
+  const routesProvided: Array<{path: string, method: string, framework: string, handler?: string, params?: string[]}> = [];
   const routesConsumed: string[] = [];
   
   // Look for patterns like app.get('/path', handler)
-  const routeRegex = /(app|router)\.(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/g;
+  const routeRegex = /(app|router)\.(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"],\s*(?:.*?([A-Za-z0-9_]+))?/g;
   let match;
   while ((match = routeRegex.exec(content)) !== null) {
+    // Extract params from route path
+    const path = match[3];
+    const params = path.match(/:[a-zA-Z0-9_]+/g)?.map(p => p.substring(1)) || [];
+    
     routesProvided.push({
-      path: match[3],
-      method: match[2].toUpperCase()
+      path,
+      method: match[2].toUpperCase(),
+      framework: 'Express', // Make sure this is always set
+      handler: match[4], // Capture handler name if present
+      params: params.length > 0 ? params : undefined
     });
   }
   
@@ -904,7 +1011,7 @@ function detectExpressRoutes(content: string): {
   return { routesProvided, routesConsumed };
 }
 
-// Add this at the end of your extension.ts file
+// Fix the getTestAPI function - it's completely broken
 export function getTestAPI() {
   return {
     updateFileListing,
@@ -916,15 +1023,14 @@ export function getTestAPI() {
     detectVueRouterRoutes,
     detectNestJsRoutes,
     getWatchState() { return currentState; },
-    setWatchState(state: WatchState) { 
+    updateStatusBar(state: WatchState) {
       currentState = state;
-      // Can't use updateStatusBarItem in test API since we don't have context
       if (currentState === WatchState.Manual) {
         statusBarItem.text = "Project Structure: Manual";
         statusBarItem.tooltip = "Click to toggle to Auto mode";
         refreshStatusBarItem.show();
       } else {
-        statusBarItem.text = "Project Structure: Auto"; 
+        statusBarItem.text = "Project Structure: Auto";
         statusBarItem.tooltip = "Click to toggle to manual mode";
         refreshStatusBarItem.hide();
       }
@@ -945,7 +1051,15 @@ export function getTestAPI() {
       }
     },
     // Use our single, unified implementation for both production and tests
-    parseFileRelationships
+    parseFileRelationships,
+    // Add this function to dispose watchers
+    disposeWatchers: function() {
+      if (fileWatcher) {
+        fileWatcher.dispose();
+        fileWatcher = undefined;
+      }
+      return Promise.resolve();
+    }
   };
 }
 

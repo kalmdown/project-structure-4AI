@@ -30,6 +30,24 @@
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: webpack-test"
+		},
+		{
+			"name": "Run Extension Test",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceFolder}/out/test/runTest.js",
+			"preLaunchTask": "webpack-test",
+			"args": ["--grep", "${input:testPattern}"],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"internalConsoleOptions": "openOnSessionStart"
+		}
+	],
+	"inputs": [
+		{
+			"id": "testPattern",
+			"description": "Test pattern to match:",
+			"default": "Project Structure Extension Tests Route Detection",
+			"type": "promptString"
 		}
 	]
 }

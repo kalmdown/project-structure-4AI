@@ -3,7 +3,7 @@
   "displayName": "Project Structure for AI",
   "publisher": "kalmdesigns",
   "description": "Automatically maintain an up-to-date file listing and routes to help AI assistants understand your project structure",
-  "version": "1.0.2",
+  "version": "2.0.3",
   "icon": "icons/extension-icon.png",
   "engines": {
     "vscode": "^1.97.0"
@@ -45,7 +45,9 @@
           "type": "array",
           "default": [
             ".git",
-            "node_modules"
+            "node_modules",
+            "out",
+            "dist"
           ],
           "description": "Directories to exclude from file listing"
         },
@@ -91,12 +93,14 @@
     "webpack": "webpack --config ./webpack.config.js",
     "webpack-dev": "webpack --mode development --watch",
     "webpack-prod": "webpack --mode production",
-    "compile": "npm run webpack",
+    "compile": "tsc -p ./",
     "package": "vsce package",
     "webpack-test": "webpack --config webpack.test.config.js",
     "test-compile": "tsc -p ./",
     "pretest": "npm run webpack-test",
-    "test": "node ./out/test/runTest.js"
+    "test": "npm run compile && node ./out/test/runTest.js",
+    "test:single": "npm run webpack-test && vscode-test --run ./out/test/extension.test.js",
+    "test:grep": "npm run webpack-test && vscode-test --run ./out/test/extension.test.js --grep"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",

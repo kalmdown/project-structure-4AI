@@ -46,7 +46,7 @@ module.exports = {
   entry: './src/extension.ts',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'extension.js',
+    filename: 'project-structure-4AI.js',
     libraryTarget: 'commonjs2'
   },
   externals: {
