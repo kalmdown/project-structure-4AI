@@ -1,22 +1,23 @@
-# Source files
-src/**
-.git/**
-.github/**
-out/**
-node_modules/**
-.gitignore
-tsconfig.json
-webpack.config.js
-.eslintrc.json
-.vscode-test/**
-.vscode/**
-.vscode/project-files.md
+# Root directories to exclude
+.git/
+.github/
+.vscode/
+.vscode-test/
+node_modules/
+out/
+src/
+test/
 
+# Specific test directories with absolute paths
+**/.vscode-test
+**/.vscode-test/**
+**/test-workspace.code-workspace
 
-# Tests
-test/**
-**/test/**
-**/*.js.map
+# Design files - be very explicit
+**/*.afdesign
+**/*.afdesign~lock~
+icons/status-bar_icons.afdesign
+icons/status-bar_icons.afdesign~lock~
 
 # Development files
 .editorconfig
@@ -28,8 +29,12 @@ test/**
 .gitlab-ci.yml
 .npmrc
 .code-workspace
+webpack.config.js
+webpack.test.config.js
+tsconfig.json
+vsc-extension-quickstart.md
 
-# Misc
+# Misc files
 **/*.vsix
 **/*.map
 **/*.ts
@@ -39,6 +44,4 @@ yarn.lock
 yarn-error.log
 .npmignore
 package-lock.json
-*.afdesign
-.afdesign~lock~
-*.mjs
+dist/project-structure-4AI.js*
